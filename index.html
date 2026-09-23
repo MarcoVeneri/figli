@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f7fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0c10" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calendario">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<title>Calendario figli</title>
+<style>
+:root{
+  --bg:#f5f5f8;--panel:rgba(255,255,255,.82);--panel2:#fff;--text:#121318;--muted:#747984;
+  --line:rgba(18,19,24,.08);--red:#ff3b30;--accent:#5b66f5;--shadow:0 18px 55px rgba(20,25,45,.10);
+  --today:rgba(91,102,245,.12);
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#090a0d;--panel:rgba(21,23,29,.84);--panel2:#15171d;--text:#f6f7fb;--muted:#979da9;
+  --line:rgba(255,255,255,.09);--red:#ff453a;--accent:#7f8cff;--shadow:0 22px 65px rgba(0,0,0,.35);--today:rgba(127,140,255,.16)}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{min-height:100dvh;background:radial-gradient(circle at 80% -10%,rgba(127,140,255,.16),transparent 34%),var(--bg)}
+button{font:inherit}
+.app{width:min(720px,100%);margin:auto;min-height:100dvh;padding:max(18px,env(safe-area-inset-top)) 16px calc(26px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;padding:5px 3px 16px}
+.brand{font-size:22px;font-weight:900;letter-spacing:-.04em}
+.today-btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:9px 13px;font-weight:800;font-size:13px;backdrop-filter:blur(18px)}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:22px;box-shadow:var(--shadow);backdrop-filter:blur(24px)}
+.month-head{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;margin-bottom:16px}
+.nav{width:42px;height:42px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--text);font-size:24px;font-weight:700}
+.month{text-align:center}
+.month h1{margin:0;font-size:29px;letter-spacing:-.04em}
+.month small{display:block;color:var(--muted);margin-top:4px;font-weight:700}
+.weekdays,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.weekdays{margin-bottom:7px}
+.weekdays div{text-align:center;font-size:11px;font-weight:850;color:var(--muted);padding:4px 0}
+.day{aspect-ratio:1/1.08;border-radius:16px;position:relative;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;font-size:14px;font-weight:750;border:1px solid transparent}
+.day.empty{opacity:0}
+.day.weekend{background:rgba(127,127,127,.035)}
+.day.today{background:var(--today);border-color:rgba(91,102,245,.24)}
+.day.today .num{font-weight:950;color:var(--accent)}
+.heart{position:absolute;left:50%;top:50%;transform:translate(-50%,-34%);font-size:22px;line-height:1;color:var(--red);filter:drop-shadow(0 3px 7px rgba(255,59,48,.16))}
+.num{position:relative;z-index:1}
+.next{margin-top:14px;border:1px solid var(--line);border-radius:21px;padding:16px;background:rgba(127,127,127,.035);display:flex;align-items:center;gap:13px}
+.next-heart{width:43px;height:43px;border-radius:14px;display:grid;place-items:center;background:rgba(255,59,48,.09);color:var(--red);font-size:23px}
+.next b{display:block;font-size:14px}.next span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+.note{font-size:12px;line-height:1.45;color:var(--muted);text-align:center;padding:17px 12px 0}
+@media(min-width:600px){
+  .app{padding-left:24px;padding-right:24px}.hero{padding:28px}.day{font-size:15px}.heart{font-size:25px}.weekdays,.grid{gap:8px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">Calendario figli</div>
+    <button class="today-btn" onclick="goToday()">Oggi</button>
+  </header>
+
+  <main class="hero">
+    <div class="month-head">
+      <button class="nav" aria-label="Mese precedente" onclick="changeMonth(-1)">‹</button>
+      <div class="month"><h1 id="monthTitle"></h1><small id="yearTitle"></small></div>
+      <button class="nav" aria-label="Mese successivo" onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="weekdays">
+      <div>LUN</div><div>MAR</div><div>MER</div><div>GIO</div><div>VEN</div><div>SAB</div><div>DOM</div>
+    </div>
+    <div class="grid" id="calendar"></div>
+
+    <div class="next">
+      <div class="next-heart">♥</div>
+      <div><b>Prossimo weekend con i figli</b><span id="nextWeekend"></span></div>
+    </div>
+  </main>
+
+  <div class="note">♥ indica i sabati e le domeniche del weekend con i figli. Festività o accordi specifici possono modificare l’alternanza.</div>
+</div>
+
+<script>
+const MONTHS=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const anchorSaturday=new Date(2026,8,19,12,0,0);
+let view=new Date(); view=new Date(view.getFullYear(),view.getMonth(),1,12);
+
+function dayStart(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate(),12)}
+function daysBetween(a,b){return Math.round((dayStart(a)-dayStart(b))/86400000)}
+
+function isWithKids(d){
+  const dow=d.getDay();
+  if(dow!==0 && dow!==6)return false;
+  let saturday;
+  if(dow===6)saturday=dayStart(d);
+  else {saturday=dayStart(d);saturday.setDate(saturday.getDate()-1)}
+  const diff=daysBetween(saturday,anchorSaturday);
+  return diff%14===0;
+}
+
+function nextKidsWeekend(from=new Date()){
+  let d=dayStart(from);
+  for(let i=0;i<30;i++){
+    if(d.getDay()===6 && isWithKids(d))return d;
+    d.setDate(d.getDate()+1);
+  }
+  return null;
+}
+
+function fmtWeekend(sat){
+  if(!sat)return "—";
+  const sun=new Date(sat);sun.setDate(sat.getDate()+1);
+  const sameMonth=sat.getMonth()===sun.getMonth();
+  return sameMonth
+    ? sat.getDate()+"–"+sun.getDate()+" "+MONTHS[sat.getMonth()].toLowerCase()
+    : sat.getDate()+" "+MONTHS[sat.getMonth()].toLowerCase()+" – "+sun.getDate()+" "+MONTHS[sun.getMonth()].toLowerCase();
+}
+
+function render(){
+  document.getElementById("monthTitle").textContent=MONTHS[view.getMonth()];
+  document.getElementById("yearTitle").textContent=view.getFullYear();
+
+  const first=new Date(view.getFullYear(),view.getMonth(),1,12);
+  const last=new Date(view.getFullYear(),view.getMonth()+1,0,12);
+  const offset=(first.getDay()+6)%7;
+  const cells=[];
+  const now=new Date();
+  const todayKey=[now.getFullYear(),now.getMonth(),now.getDate()].join("-");
+
+  for(let i=0;i<offset;i++)cells.push('<div class="day empty"></div>');
+  for(let n=1;n<=last.getDate();n++){
+    const d=new Date(view.getFullYear(),view.getMonth(),n,12);
+    const key=[d.getFullYear(),d.getMonth(),d.getDate()].join("-");
+    const weekend=d.getDay()===0||d.getDay()===6;
+    const heart=isWithKids(d)?'<span class="heart">♥</span>':"";
+    cells.push('<div class="day '+(weekend?'weekend ':'')+(key===todayKey?'today':'')+'"><span class="num">'+n+'</span>'+heart+'</div>');
+  }
+  while(cells.length%7!==0)cells.push('<div class="day empty"></div>');
+  document.getElementById("calendar").innerHTML=cells.join("");
+  document.getElementById("nextWeekend").textContent=fmtWeekend(nextKidsWeekend(new Date()));
+}
+
+function changeMonth(delta){view=new Date(view.getFullYear(),view.getMonth()+delta,1,12);render()}
+function goToday(){const d=new Date();view=new Date(d.getFullYear(),d.getMonth(),1,12);render()}
+
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+render();
+</script>
+</body>
+</html>
