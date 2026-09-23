@@ -1,0 +1,14 @@
+{
+  "name": "Calendario figli",
+  "short_name": "Calendario",
+  "description": "Calendario condiviso dei weekend con i figli.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f8",
+  "theme_color": "#f5f5f8",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"},
+    {"src":"./apple-touch-icon.png","sizes":"180x180","type":"image/png","purpose":"any"}
+  ]
+}
