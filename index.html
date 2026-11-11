@@ -148,7 +148,11 @@ function render(){
 function changeMonth(delta){view=new Date(view.getFullYear(),view.getMonth()+delta,1,12);render()}
 function goToday(){const d=new Date();view=new Date(d.getFullYear(),d.getMonth(),1,12);render()}
 
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.addEventListener("controllerchange",()=>window.location.reload());
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{}));
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)navigator.serviceWorker.getRegistration().then(reg=>reg&&reg.update()).catch(()=>{})});
+}
 render();
 </script>
 </body>
